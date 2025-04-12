@@ -120,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const salePrice = filtered.map(d => d.SalePrice);
 
             const scatter = {
-                x: filtered.map(d => d[xAxis]),
-                y: filtered.map(d => d.GrLivArea),
+                x: filtered.map(d => d.GrLivArea),
+                y: filtered.map(d => d["1stFlrSF"]),
                 z: salePrice,
                 mode: "markers",
                 type: "scatter3d",
@@ -131,26 +131,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     colorscale: "Portland",
                     opacity: 0.7,
                 },
-                name: `${xAxis} x GrLivArea x SalePrice`
+                name: "GrLivArea x 1stFlrSF x SalePrice"
             };
 
+            const neighborhoods = Object.keys(groupCounts);
+            const houseCounts = Object.values(groupCounts);
+            const avgQualities = neighborhoods.map(n =>
+                filtered.filter(d => d.Neighborhood === n).reduce((acc, cur, i, arr) => acc + cur.OverallQual / arr.length, 0)
+            );
+
             const bar3d = {
-                x: Object.keys(groupCounts),
-                y: Object.values(groupCounts),
-                z: Array(Object.keys(groupCounts).length).fill(Math.max(...salePrice)),
+                x: neighborhoods,
+                y: houseCounts,
+                z: avgQualities,
                 mode: "markers",
                 type: "scatter3d",
                 marker: {
                     size: 6,
-                    color: "#2ca02c",
+                    color: avgQualities,
+                    colorscale: "Viridis",
                     symbol: "diamond",
                 },
-                name: `${groupBy} Count`
+                name: "Neighborhood x Count x AvgQual"
             };
 
             const box3d = qualities.map(q => ({
                 x: Array(filtered.length).fill(q),
-                y: Array(filtered.length).fill(0),
+                y: filtered.filter(d => d.OverallQual === q).map(d => d.TotRmsAbvGrd || 0),
                 z: filtered.filter(d => d.OverallQual === q).map(d => d.SalePrice),
                 mode: "markers",
                 type: "scatter3d",
@@ -168,17 +175,32 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (selected3D === "box") chartData = box3d;
             else chartData = [scatter, bar3d, ...box3d];
 
+            let xLabel = "X", yLabel = "Y", zLabel = "Z";
+
+            if (selected3D === "scatter") {
+                xLabel = "GrLivArea";
+                yLabel = "1stFlrSF";
+                zLabel = "SalePrice";
+            } else if (selected3D === "bar") {
+                xLabel = "Neighborhood";
+                yLabel = "House Count";
+                zLabel = "Average Quality";
+            } else if (selected3D === "box") {
+                xLabel = "OverallQual";
+                yLabel = "TotRmsAbvGrd";
+                zLabel = "SalePrice";
+            }
+
             Plotly.newPlot("combined-subplot", chartData, {
                 margin: {t: 60},
                 height: 800,
                 scene: {
-                    xaxis: {title: "X"},
-                    yaxis: {title: "Y"},
-                    zaxis: {title: "SalePrice"}
+                    xaxis: {title: xLabel},
+                    yaxis: {title: yLabel},
+                    zaxis: {title: zLabel}
                 },
                 title: `🏘️ 3D: ${selected3D.charAt(0).toUpperCase() + selected3D.slice(1)} View`
             });
-
         } else {
             Plotly.newPlot("combined-subplot", [hist, bar, ...boxPlots, scatter2D], layout);
         }
