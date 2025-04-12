@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Real Estate Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="container py-4">
+<h1 class="mb-4 text-center">🏘️ Real Estate Dashboard</h1>
+
+<div class="tab-content" id="chartTabsContent">
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <div class="row gy-3 align-items-end mb-4">
+            <div class="col-md-2">
+                <label for="qualitySlider" class="form-label">Overall Quality:</label>
+                <input type="range" class="form-range" min="1" max="10" step="1" value="1" id="qualitySlider">
+                <div class="form-text">Min: <span id="qualityValue">1</span></div>
+            </div>
+
+            <div class="col-md-4">
+                <label for="priceRange" class="form-label">Sale Price Range:</label>
+                <div class="d-flex align-items-center">
+                    <label for="priceMin" class="form-label me-2">Min:</label>
+                    <input type="range" class="form-range me-2" id="priceMin" min="0" max="800000" step="10000"
+                           value="0"/>
+                    <label for="priceMax" class="form-label me-2">Max:</label>
+                    <input type="range" class="form-range" id="priceMax" min="0" max="800000" step="10000"
+                           value="800000"/>
+                </div>
+                <div class="form-text">$<span id="priceMinValue">0</span> - $<span id="priceMaxValue">800000</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label for="xAxisSelect" class="form-label">X-Axis for Scatter Plot:</label>
+                <select id="xAxisSelect" class="form-select">
+                    <option value="GrLivArea">GrLivArea</option>
+                    <option value="LotArea">LotArea</option>
+                    <option value="TotalBsmtSF">TotalBsmtSF</option>
+                    <option value="1stFlrSF">1stFlrSF</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Chart Mode:</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="chartTypeToggle"/>
+                    <label class="form-check-label" for="chartTypeToggle">Enable 3D</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <label for="groupBySelect" class="form-label">Group By:</label>
+                <select id="groupBySelect" class="form-select">
+                    <option value="Neighborhood">Neighborhood</option>
+                    <option value="OverallQual">Overall Quality</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-none" id="chart3DSelectWrapper">
+                <label for="chart3DSelect" class="form-label">3D Chart Type:</label>
+                <select id="chart3DSelect" class="form-select">
+                    <option value="all" selected>All (Combined)</option>
+                    <option value="scatter">3D Scatter</option>
+                    <option value="box">3D Box</option>
+                    <option value="bar">3D Bar</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-danger w-100" id="clearFilters">Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 plot-box" id="combined-subplot"></div>
+        </div>
+    </div>
+</div>
+
+<footer>Altin Kelmendi 2025</footer>
+<script src="/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
