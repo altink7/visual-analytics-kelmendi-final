@@ -71,16 +71,20 @@ document.addEventListener("DOMContentLoaded", () => {
             grid: {rows: 2, columns: 2, pattern: "independent"},
             height: 800,
             margin: {t: 60, l: 50, r: 20, b: 40},
-            title: "🏘️ Real Estate Visual Summary"
+            title: "🏘️ Real Estate Visual Summary",
+            annotations: []
         };
 
         const hist = {
             x: filtered.map(d => d.SalePrice),
             type: "histogram",
             marker: {color: "#1f77b4"},
-            name: "Price Distribution",
+            name: "Histogram: Distribution of House Prices",
             xaxis: "x1", yaxis: "y1"
         };
+
+        layout.xaxis1 = {title: "Sale Price (USD)"};
+        layout.yaxis1 = {title: "Number of Houses"};
 
         const groupCounts = {};
         filtered.forEach(d => {
@@ -93,18 +97,24 @@ document.addEventListener("DOMContentLoaded", () => {
             y: Object.values(groupCounts),
             type: "bar",
             marker: {color: "#2ca02c"},
-            name: `${groupBy} Count`,
+            name: `Bar Chart: ${groupBy} Count`,
             xaxis: "x2", yaxis: "y2"
         };
+
+        layout.xaxis2 = {title: groupBy};
+        layout.yaxis2 = {title: "Count"};
 
         const qualities = [...new Set(filtered.map(d => d.OverallQual))].sort((a, b) => a - b);
         const boxPlots = qualities.map(q => ({
             y: filtered.filter(d => d.OverallQual === q).map(d => d.SalePrice),
             type: "box",
-            name: `Qual ${q}`,
+            name: `${q}`,
             boxpoints: "outliers",
             xaxis: "x3", yaxis: "y3"
         }));
+
+        layout.xaxis3 = {title: "Overall Quality"};
+        layout.yaxis3 = {title: "Sale Price (USD)"};
 
         const scatter2D = {
             x: filtered.map(d => d[xAxis]),
@@ -112,9 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
             mode: "markers",
             type: "scatter",
             marker: {size: 6, color: "#ff7f0e"},
-            name: `${xAxis} vs. Price`,
+            name: `Scatter Plot: ${xAxis} vs SalePrice`,
             xaxis: "x4", yaxis: "y4"
         };
+
+        layout.xaxis4 = {title: xAxis};
+        layout.yaxis4 = {title: "Sale Price (USD)"};
 
         if (use3D) {
             const salePrice = filtered.map(d => d.SalePrice);
@@ -131,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     colorscale: "Portland",
                     opacity: 0.7,
                 },
-                name: "GrLivArea x 1stFlrSF x SalePrice"
+                name: "3D Scatter: GrLivArea x 1stFlrSF x SalePrice"
             };
 
             const neighborhoods = Object.keys(groupCounts);
@@ -152,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     colorscale: "Viridis",
                     symbol: "diamond",
                 },
-                name: "Neighborhood x Count x AvgQual"
+                name: "3D Bar: Neighborhood Count x AvgQual"
             };
 
             const box3d = qualities.map(q => ({
@@ -166,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: "#9467bd",
                     opacity: 0.5,
                 },
-                name: `Qual ${q}`
+                name: `3D Box: Qual ${q}`
             }));
 
             let chartData = [];
