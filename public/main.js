@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartTypeToggle = document.getElementById("chartTypeToggle");
     const chart3DSelect = document.getElementById("chart3DSelect");
     const chart3DSelectWrapper = document.getElementById("chart3DSelectWrapper");
+    const mapToggle = document.getElementById("mapToggle");
 
     let data = [];
 
@@ -24,13 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     });
 
-    [priceMinSlider, priceMaxSlider, qualitySlider, xAxisSelect, groupBySelect, chartTypeToggle, chart3DSelect].forEach(ctrl => {
+    [priceMinSlider, priceMaxSlider, qualitySlider, xAxisSelect, groupBySelect, chartTypeToggle, chart3DSelect, mapToggle].forEach(ctrl => {
         ctrl.addEventListener("input", () => {
             updateControls();
             drawAll();
             chart3DSelectWrapper.classList.toggle("d-none", !chartTypeToggle.checked);
         });
     });
+
 
     document.getElementById("clearFilters").addEventListener("click", () => {
         priceMinSlider.value = 0;
@@ -60,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const groupBy = groupBySelect.value;
         const use3D = chartTypeToggle.checked;
         const selected3D = chart3DSelect.value;
+        const showMap = mapToggle.checked;
+
 
         const filtered = data.filter(d =>
             d.SalePrice >= minPrice &&
@@ -214,8 +218,61 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 title: `🏘️ 3D: ${selected3D.charAt(0).toUpperCase() + selected3D.slice(1)} View`
             });
+        } else if (showMap) {
+            const zipCounts = {};
+            filtered.forEach(d => {
+                const zip = String(d.ZipCode);
+                if (!zipCounts[zip]) {
+                    zipCounts[zip] = {
+                        count: 0,
+                        coords: zipCodeCoordinates[zip] || {lat: 42.03, lon: -93.65}
+                    };
+                }
+                zipCounts[zip].count++;
+            });
+
+            const zipData = Object.entries(zipCounts).map(([zip, info]) => ({
+                lat: info.coords.lat,
+                lon: info.coords.lon,
+                count: info.count,
+                text: `ZIP: ${zip} - 🏠 ${info.count} houses`
+            }));
+
+            const mapboxTrace = {
+                type: "scattermapbox",
+                mode: "markers",
+                lat: zipData.map(m => m.lat),
+                lon: zipData.map(m => m.lon),
+                text: zipData.map(m => m.text),
+                marker: {
+                    size: zipData.map(m => Math.sqrt(m.count) * 10),
+                    color: zipData.map(m => m.count),
+                    colorscale: "YlGnBu",
+                    showscale: true
+                },
+                name: "Mapbox"
+            };
+
+            Plotly.newPlot("combined-subplot", [mapboxTrace], {
+                title: "🏘️ Houses per ZIP Code (Mapbox)",
+                mapbox: {
+                    style: "carto-positron",
+                    center: {lat: 42.03, lon: -93.65},
+                    zoom: 11
+                },
+                height: 800
+            });
+
         } else {
             Plotly.newPlot("combined-subplot", [hist, bar, ...boxPlots, scatter2D], layout);
         }
     }
 });
+
+// used: https://www.freemaptools.com/convert-us-zip-code-to-lat-lng.htm
+// to convert zip codes to lat/lon
+const zipCodeCoordinates = {
+    "50010": {lat: 42.03032, lon: -93.58559},
+    "50014": {lat: 42.06574, lon: -93.69439},
+    "50105": {lat: 42.10765, lon: -93.63982},
+};
